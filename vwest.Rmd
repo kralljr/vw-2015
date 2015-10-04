@@ -1,0 +1,141 @@
+--- 
+title: "Volkswagen Estimates"
+output:
+  html_document:
+    toc: true
+    number_sections: true
+    theme: cosmo
+    toc_depth: 2
+---
+
+
+
+
+```{r lib, warning F, message F, echo = F}
+# File to test mcmc_corr.R
+library(mvtnorm)
+library(truncnorm)
+library(MESS)
+library(knitr)
+
+
+opts_chunk$set(message = F, fig.align = "center", warning = F, echo = T)
+```
+
+# Overall
+
+- Number of VW cars estimated by the EPA is [482000](http://yosemite.epa.gov/opa/admpress.nsf/6424ac1caa800aab85257359003f5337/dfc8e33b5ab162b985257ec40057813b!OpenDocument/)
+- Average number of miles driven per year estimated by the US Department of Energy to be [11244](http://www.afdc.energy.gov/data/10309/) 
+- EPA Tier 2 Bin 5 standard [0.07 grams / mile](http://www3.epa.gov/otaq/standards/light-duty/tier2stds.htm/)
+- ICCT estimated VW cars had NOx emissions [15-35 times](http://www.theicct.org/news/epas-notice-violation-clean-air-act-volkswagen-press-statement) the legal limit (0.07) 
+
+# New York Times
+
+[Article link](http://www.nytimes.com/2015/09/29/upshot/how-many-deaths-did-volkswagens-deception-cause-in-us.html/)
+
+## Estimate 1: Margot Sanger-Katz and John Schwartz
+
+```{r}
+# total tons in US since late 2008
+tons <- 46000
+
+350 / (46000 / 6)
+46000 / (.38 * 1000 * 2539)
+
+# unclear, from  Dechênes working paper
+redmort <- .04
+
+deaths <- 106
+```
+
+## Estimate 2: Noelle Eckley Selin
+
+```{r}
+# total tons in US since late 2008
+tons <- 46000
+
+# Deaths per ton of NOx from EPA/ Krewski et al. 2009
+deathsperton <- 0.00085
+
+deaths <- deathsperton * tons
+
+# Total deaths over 6 years in US
+round(deaths, 2)
+```
+
+
+ 
+
+# Vox
+
+[Article link](http://www.vox.com/2015/9/23/9383641/volkswagen-scandal-pollution/)
+
+```{r}
+# Number of VW cars sold in US (total)
+cars <- 482000
+# Tier 2- Bin 5 NOx emission standard in grams per mile
+# (From EPA limits)
+limit <- 0.07
+# VW cars exceeded legal limits by X times
+# From 
+exlimit <- c(15, 35)
+# Deaths per ton of NOx
+deathperton <- c(0.00085, 0.0019)
+# Miles driven per year (average)
+milesyear <- 11244
+# Grams per ton
+gramton <- 907185
+
+# Range of excess NOx emissions
+exnox <- (limit * (exlimit - 1)) * cars * milesyear / gramton
+
+# Range of excess deaths per year in US
+deaths <- exnox * deathperton
+
+# Range of excess deaths in US over 6 years
+round(deaths * 6, 2)
+```
+
+
+
+
+# Mother Jones
+
+[Article link](http://www.motherjones.com/kevin-drum/2015/09/spreadsheet-day-how-many-people-did-vw-kill/)
+
+```{r}
+# Number of VW cars sold in CA
+carsCA <- 50000
+
+# Excess tons of NOx over 6 years
+# miles driven per year (approximate with 11244 from Vox?)
+milesyear <- 12000
+
+# Approximate increasing number of cars sold to equal 50000
+cars <- c(3000, 5000, 7000, 10000, 12000, 13000)
+years <- seq(2009, 2014)
+miles <- milesyear * (2015 - years)
+
+# Total miles driven over 6 years
+milestot <- sum(cars * miles)
+
+# Excess NOx per mile 
+exnoxmil <- 30 * 0.07
+
+# Grams per ton
+gramton <- 907185
+
+# Excexx total NOx in tons
+exnox <- exnoxmil * milestot / gramton
+
+# Deaths per ton (range of 0.0019, 0.0095)
+# Not clear where .0044 comes from, range from (Mauzerall et al. 2005)
+deathsperton <- c(0.0019, 0.0044, 0.0095)
+
+# Estimated excess deaths in California
+deaths <- exnox * deathsperton
+
+# Estimated excess deaths in US over 6 years
+# Obtained by 50000 approximately 1/10 total cars sold
+round(deaths * 10, 2)
+```
