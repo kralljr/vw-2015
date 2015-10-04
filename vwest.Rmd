@@ -24,7 +24,8 @@ opts_chunk$set(message = F, fig.align = "center", warning = F, echo = T)
 
 # Overall
 
-- Number of VW cars estimated by the EPA is [482000](http://yosemite.epa.gov/opa/admpress.nsf/6424ac1caa800aab85257359003f5337/dfc8e33b5ab162b985257ec40057813b!OpenDocument/)
+- Number of affected VW cars in US estimated by the EPA is [482000](http://yosemite.epa.gov/opa/admpress.nsf/6424ac1caa800aab85257359003f5337/dfc8e33b5ab162b985257ec40057813b!OpenDocument/)
+- Number of affected VW cars in California estimated by the California Air Resources Board is [50000](http://www.arb.ca.gov/newsrel/in_use_compliance_letter.htm/)
 - Average number of miles driven per year estimated by the US Department of Energy to be [11244](http://www.afdc.energy.gov/data/10309/) 
 - EPA Tier 2 Bin 5 standard [0.07 grams / mile](http://www3.epa.gov/otaq/standards/light-duty/tier2stds.htm/)
 - ICCT estimated VW cars had NOx emissions [15-35 times](http://www.theicct.org/news/epas-notice-violation-clean-air-act-volkswagen-press-statement) the legal limit (0.07) 
@@ -105,6 +106,7 @@ round(deaths * 6, 2)
 
 ```{r}
 # Number of VW cars sold in CA
+# From CARB compliance letter
 carsCA <- 50000
 
 # Excess tons of NOx over 6 years
