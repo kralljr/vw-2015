@@ -18,7 +18,7 @@ library(truncnorm)
 library(MESS)
 library(knitr)
 library(dplyr)
-
+library(tidyr)
 opts_chunk$set(message = F, fig.align = "center", warning = F, echo = F)
 ```
 
@@ -268,17 +268,45 @@ To determine the greatest source of uncertainty, we used baseline values of 17 b
 
 
 ```{r, eval = T}
+# Uncertainty evaluation
+miles <- c(6, 17, 33)
+exceed <- c(15, 30, 40)
+deathton <- c(0.00085, 0.0019, 0.0095)
+dat2 <- expand.grid(miles, exceed, deathton)
+colnames(dat2) <- c("miles", "exceed", "deathton")
 
-miles <- c(17, 17, 33, 17)
-exceed <- c(15, 15, 15, 40)
-deathton <- c(0.00085, 0.0095, 0.00085, 0.00085)
-bl <- miles * 10^9 *0.07 * (exceed - 1) / gramton * deathton
-bl <- round(bl)
+# Compute deaths
+dat2 <- mutate(dat2, bl = round(miles * 10^9 *0.07 * (exceed - 1) / 907185 * deathton))
 
-dat2 <- data.frame(miles, exceed, deathton, bl)
-colnames(dat2) <- c("Miles (billions)", "Amount NOx exceed limit", "Deaths per ton of NOx", "Total US Deaths")
+# Plot histogram of deaths
+dat2$miles <- factor(dat2$miles)
+dat2$exceed <- factor(dat2$exceed)
+dat2$deathton <- factor(dat2$deathton)
+g1 <- ggplot(dat2, aes(x = bl)) + 
+  geom_histogram(alpha = 0.5, color = "black") +
+  theme_bw() + xlab("Estimated US deaths") + 
+  ylab("Number of scenarios") +
+  scale_fill_brewer(palette = "Blues", name = "Deaths per ton") +
+  #theme(text = element_text(size = 14)) 
+png("vw-unc-plot.png", height = 350 * 2, width = 480 * 2)
+g1
+dev.off()
 
-kable(dat2)
+pdf("vw-unc-plot.pdf", height = 3, width = 4)
+g1
+dev.off()
+
+embedFonts("vw-unc-plot.pdf")
+
+
+#dat2 <- spread(dat2, deathton, bl)
+
+# Save table
+#colnames(dat2) <- c("Miles (billions)", "Amount NOx exceed limit", "Deaths per ton of NOx", "Total US Deaths")
+
+#kable(dat2)
+#dat2[c(1, 3, 7, 19), ]
+dat2 <- dat2[c(14, 15, 17, 23), ]
 
 write.csv(dat2, file = "est-uncertainty.csv", row.names = F)
 ```
