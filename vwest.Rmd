@@ -19,6 +19,8 @@ library(MESS)
 library(knitr)
 library(dplyr)
 library(tidyr)
+library(ggplot2)
+
 opts_chunk$set(message = F, fig.align = "center", warning = F, echo = F)
 ```
 
@@ -264,7 +266,6 @@ write.csv(dat, file = "vw-estimates.csv", row.names = F)
 ```
 
 
-To determine the greatest source of uncertainty, we used baseline values of 17 billion miles driven, affected vehicles were 15 times the EPA limit of 0.07, and 0.00085 deaths per ton of NOx.  Then, the smallest estimated number of deaths given the range of values used in the analyses was 15 deaths. Changing the number of deaths per ton of NOx to the largest value, 0.0095, yields 174 deaths.  Changing the number of miles driven to 33 billion, we estimate 30 deaths.  Changing the amount by which the Volkswagen vehicles exceeded the limit from 15 to 40 gives 43 deaths. Therefore the largest source of uncertainty related to the Volkswagen emissions is the estimated deaths per ton of NOx emitted.    
 
 
 ```{r, eval = T}
@@ -287,27 +288,29 @@ g1 <- ggplot(dat2, aes(x = bl)) +
   theme_bw() + xlab("Estimated US deaths") + 
   ylab("Number of scenarios") +
   scale_fill_brewer(palette = "Blues", name = "Deaths per ton") +
-  #theme(text = element_text(size = 14)) 
-png("vw-unc-plot.png", height = 350 * 2, width = 480 * 2)
+  theme(text = element_text(size = 14)) 
+#png("vw-unc-plot.png", height = 350 * 2, width = 480 * 2)
 g1
-dev.off()
+#dev.off()
 
-pdf("vw-unc-plot.pdf", height = 3, width = 4)
-g1
-dev.off()
+#pdf("vw-unc-plot.pdf", height = 3, width = 4)
+#g1
+#dev.off()
 
-embedFonts("vw-unc-plot.pdf")
+#embedFonts("vw-unc-plot.pdf")
 
 
 #dat2 <- spread(dat2, deathton, bl)
 
 # Save table
-#colnames(dat2) <- c("Miles (billions)", "Amount NOx exceed limit", "Deaths per ton of NOx", "Total US Deaths")
+
 
 #kable(dat2)
 #dat2[c(1, 3, 7, 19), ]
 dat2 <- dat2[c(14, 15, 17, 23), ]
 
+colnames(dat2) <- c("Miles (billions)", "Amount NOx exceed limit", "Deaths per ton of NOx", "Total US Deaths")
+kable(dat2, row.names = F)
 write.csv(dat2, file = "est-uncertainty.csv", row.names = F)
 ```
 
