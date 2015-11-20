@@ -12,15 +12,13 @@ output:
 
 
 ```{r lib, warning =  F, message = F, echo = F}
-# File to test mcmc_corr.R
-library(mvtnorm)
-library(truncnorm)
-library(MESS)
+# Load libraries
 library(knitr)
 library(dplyr)
 library(tidyr)
 library(ggplot2)
 
+# Set knitr options
 opts_chunk$set(message = F, fig.align = "center", warning = F, echo = F)
 ```
 
@@ -28,7 +26,7 @@ opts_chunk$set(message = F, fig.align = "center", warning = F, echo = F)
 
 This report attempts to reproduce analyses conducted by the New York Times, Vox, Mother Jones, and the Associated Press to determine the number of deaths associated with the Volkswagen defeat devices.
 
-Here are important statistics used in some of the analyses:
+Relevant statistics used in some of the analyses:
 
 - Approximate number of affected Volkswagen vehicles in the US: [482000](http://yosemite.epa.gov/opa/admpress.nsf/6424ac1caa800aab85257359003f5337/dfc8e33b5ab162b985257ec40057813b!OpenDocument) (source:  US EPA)
 - Approximate number of affected Volkswagen vehicles in California: [50000](http://www.arb.ca.gov/newsrel/in_use_compliance_letter.htm/) (source: California Air Resources Board)
@@ -38,14 +36,18 @@ Here are important statistics used in some of the analyses:
 - Amount the affected Volkswagen vehicles exceeded the US EPA standards of 0.07 for NOx emissions: [15-35 times](http://www.theicct.org/news/epas-notice-violation-clean-air-act-volkswagen-press-statement) (source: The International Council on Clean Transportation) 
 
 
-```{r, echo = F}
-#rounding 
-r1 <- 0
+```{r init, echo = F}
 
 #initialize estimates
-dat <- data.frame(matrix(nrow = 6, ncol = 7))
-colnames(dat) <- c("estimate", "miles", "exceed", "exnox", "deathston", "poll", "deaths")
-dat$estimate <- c("New York Times: MSK-JS", "New York Times: Selin", "Vox", "Mother Jones", "Associated Press", "JRK")
+dat <- data.frame(matrix(nrow = 5, ncol = 7))
+colnames(dat) <- c("estimate", "miles", "exceed", "exnox", "deathston", "poll",
+    "deaths")
+dat$estimate <- c("New York Times: MSK-JS", "New York Times: Selin", "Vox", 
+    "Mother Jones", "Associated Press")
+
+
+#rounding 
+r1 <- 0
 ```
 
 
@@ -55,7 +57,9 @@ dat$estimate <- c("New York Times: MSK-JS", "New York Times: Selin", "Vox", "Mot
 
 ## Estimate 1: Margot Sanger-Katz and John Schwartz
 
-```{r}
+```{r katzschwartz}
+# Note: some information provided by Sanger-Katz via e-mail communication
+
 # This is the sum of affected Volkswagen vehicles sold in each each from 2009 until 2015
 numcars <- 461723 - 13
 
@@ -77,15 +81,14 @@ tons <- milestot * limit * exlimit / gramton
 # Tons emitted by season
 tonssea <- tons * 5/12
 
-# total tons in US since late 2008
+# Total tons of NOx in US since late 2008
 tons <- 46000
-
 
 # Unclear how this estimate was obtained, from  Dechênes et al. working paper
 deaths1 <- 106
+
+# Update table
 dat$deaths[1] <- deaths1
-
-
 dat$exceed[1] <- 40
 dat$exnox[1] <- tons
 dat$deathston[1] <- ""
@@ -96,11 +99,11 @@ The authors estimated the number of affected vehicles in the US to be approximat
 
 ## Estimate 2: Noelle Eckley Selin
 
-```{r}
-# total tons in US since late 2008 (see above from Sanger-Katz/Schwartz estimate)
+```{r selin}
+# Total tons of NOx in US since late 2008 (see above from Sanger-Katz/Schwartz estimate)
 tons <- 46000
 
-# Deaths per ton of NOx from EPA/ Krewski et al. 2009
+# Deaths per ton of NOx from EPA technical support document/ Krewski et al. 2009
 deathsperton <- 0.00085
 deaths <- deathsperton * tons
 
@@ -108,7 +111,7 @@ deaths <- deathsperton * tons
 deaths1 <- round(deaths, r1)
 
 
-
+# Update table
 dat$exceed[2] <- 40
 dat$exnox[2] <- tons
 dat$deathston[2] <- deathsperton
@@ -123,7 +126,7 @@ This estimate was obtained using the same number of miles and estimated excess t
 
 [Article link](http://www.vox.com/2015/9/23/9383641/volkswagen-scandal-pollution/)
 
-```{r}
+```{r vox}
 # Number of VW cars sold in US (total)
 cars <- 482000
 # US EPA Tier 2- Bin 5 NOx emission standard in grams per mile
@@ -151,7 +154,7 @@ deaths <- exnox * deathperton
 deaths1 <- round(deaths * 6, r1)
 
 
-
+# Update table
 dat$miles[3] <- miles * 6 / 10^9
 dat$exceed[3] <- "15-35"
 dat$exnox[3] <- paste0("(", paste(round(exnox * 6, r1), collapse = "-"), ")")
@@ -170,7 +173,7 @@ To estimate the number of deaths, they used the estimated increase in deaths per
 
 [Article link](http://www.motherjones.com/kevin-drum/2015/09/spreadsheet-day-how-many-people-did-vw-kill/)
 
-```{r}
+```{r motherjones}
 # Number of VW cars sold in CA
 carsCA <- 50000
 
@@ -184,8 +187,6 @@ miles <- milesyear * (2015 - years)
 
 # Total miles driven in CA over 6 years
 milestot <- sum(cars * miles)
-
-
 
 # Excess NOx per mile 
 exnoxmil <- 30 * 0.07
@@ -208,7 +209,7 @@ deaths <- exnox * deathsperton
 deaths1 <- round(deaths * 10, r1)
 
 
-# Significance table
+# Update table
 # Total miles driven in US over 6 years
 dat$miles[4] <- milestot / 10^9 * 10
 dat$exceed[4] <- 30
@@ -228,12 +229,8 @@ They assumed that vehicles were 30 times the EPA limit of 0.07.  To estimate the
 [Article link](http://bigstory.ap.org/article/a6925f0af82e44aaa1a1ed4b55d030f6/ap-analysis-dozens-deaths-likely-vw-pollution-dodge)
 
 
-```{r}
-
-
-
-
-
+```{r AP}
+# Update table
 #12 to 69 deaths or 16-94 deaths.
 dat$deaths[5] <- "(16-94)"
 ``` 
@@ -244,35 +241,35 @@ Little information was provided about the assumptions used in the AP analysis. T
 
 # Significance article
 
-```{r}
+## Table of estimates
+```{r sig}
 
 dat$miles <- round(dat$miles, r1)
 
-cars <- 482000
-milesyear <- 11244
-
-miles1 <- (cars * milesyear * c(1, 6) / 10^9) %>% round(., r1)
-dat$miles[6] <- paste0("(", paste(miles1, collapse = "-"), ")")
-
-
-dat <- dat[c(1, 2, 3, 4, 5), ] 
-
-colnames(dat) <- c("Source", "Miles (billions)", "Amount NOx exceed limit", "Excess NOx (tons)", "Deaths per ton of NOx", "Ambient pollutant causing death", "Total US Deaths")
+colnames(dat) <- c("Source", "Miles (billions)", "Amount NOx exceed limit", 
+    "Excess NOx (tons)", "Deaths per ton of NOx", 
+    "Ambient pollutant causing death", "Total US Deaths")
 
 kable(dat, row.names = F)
 
-
+# 
 write.csv(dat, file = "vw-estimates.csv", row.names = F)
 ```
 
 
 
+## Uncertainty simulation
 
-```{r, eval = T}
-# Uncertainty evaluation
+### Histogram of all results
+```{r unc1}
+
+
+# Vary estimates
 miles <- c(6, 17, 33)
 exceed <- c(15, 30, 40)
 deathton <- c(0.00085, 0.0019, 0.0095)
+
+# Create table
 dat2 <- expand.grid(miles, exceed, deathton)
 colnames(dat2) <- c("miles", "exceed", "deathton")
 
@@ -293,6 +290,7 @@ g1 <- ggplot(dat2, aes(x = bl)) +
 g1
 #dev.off()
 
+# Plot for print
 #pdf("vw-unc-plot.pdf", height = 3, width = 4)
 #g1
 #dev.off()
@@ -300,17 +298,17 @@ g1
 #embedFonts("vw-unc-plot.pdf")
 
 
-#dat2 <- spread(dat2, deathton, bl)
+```
 
-# Save table
+### Table of selected simulation results
 
-
-#kable(dat2)
-#dat2[c(1, 3, 7, 19), ]
+```{r unc2}
+# Create table 2 for significance article
 dat2 <- dat2[c(14, 15, 17, 23), ]
-
-colnames(dat2) <- c("Miles (billions)", "Amount NOx exceed limit", "Deaths per ton of NOx", "Total US Deaths")
+colnames(dat2) <- c("Miles (billions)", "Amount NOx exceed limit", 
+    "Deaths per ton of NOx", "Total US Deaths")
 kable(dat2, row.names = F)
+# Save output
 write.csv(dat2, file = "est-uncertainty.csv", row.names = F)
 ```
 
